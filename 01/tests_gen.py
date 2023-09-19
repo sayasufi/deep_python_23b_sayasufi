@@ -126,18 +126,17 @@ class TestSearchWordsInFile(unittest.TestCase):
             set(gen_search_words(file_name, words))
 
     # Тест 9
-    def test_search_1(self):
+    def test_searching_strings_from_file_object(self):
         """
         Проверка валидных данных, если передан открытый файловый объект
         """
         file_name = "test.txt"
+        words = ["роза", "два"]
         expected_result = ["а Роза упала на лапу Азора", "раз два три"]
         text = """а Роза упала на лапу Азора\nраз два три\nРозовый цветок"""
         with open(file_name, "w", encoding="UTF-8") as file:
             file.write(text)
-        file = open("test.txt", "r", encoding="UTF-8")
-        words = ["роза", "два"]
-        result = list(gen_search_words(file, words))
-        self.assertEqual(result, expected_result)
-        file.close()
+        with open("test.txt", "r", encoding="UTF-8") as file:
+            result = list(gen_search_words(file, words))
+            self.assertEqual(result, expected_result)
         os.remove(file_name)

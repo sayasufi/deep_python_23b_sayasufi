@@ -17,17 +17,13 @@ def gen_search_words(file_object, search_words):
     ):
         raise TypeError
     # Проверка того, что объект является файловым объектом
-    if hasattr(file_object, "close"):
-        for line in file_object:
-            if set(map(str.lower, search_words)) & set(line.lower().split()):
+    if isinstance(file_object, str) and not os.path.exists(file_object):
+        raise FileNotFoundError
+    set_words = set(map(str.lower, search_words))
+    # Если объект имеет атрибут name,
+    # то возращает значение атрибута, иначе возращает имя файла
+    file_name = getattr(file_object, "name", file_object)
+    with open(file_name, "r", encoding="UTF-8") as file:
+        for line in file:
+            if set_words & set(line.lower().split()):
                 yield line.strip()
-    else:
-        # Проверка того, что файл существует
-        if not os.path.exists(file_object):
-            raise FileNotFoundError
-        with open(file_object, "r", encoding="UTF-8") as file:
-            for line in file:
-                if set(map(str.lower, search_words)) & set(
-                    line.lower().split()
-                ):
-                    yield line.strip()

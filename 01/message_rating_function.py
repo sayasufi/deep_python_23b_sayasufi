@@ -12,9 +12,10 @@ def predict_message_mood(
     bad_thresholds: float = 0.3,
     good_thresholds: float = 0.8,
 ) -> str:
-    """Функция оценки сообщения"""
+    """Возвращает оценку в зависимости от результата выполнения предсказания
+    модели."""
     # Проверка корректности типа данных модели
-    if not isinstance(model, SomeModel):
+    if not isinstance(model, SomeModel) or not isinstance(message, str):
         raise TypeError
 
     prediction = model.predict(message)
@@ -23,7 +24,6 @@ def predict_message_mood(
     if any(
         (
             not isinstance(prediction, (float, int)),
-            not isinstance(message, str),
             not isinstance(bad_thresholds, (float, int)),
             not isinstance(good_thresholds, (float, int)),
         )
