@@ -20,8 +20,7 @@ def gen_search_words(file_object, search_words):
     if isinstance(file_object, str) and not os.path.exists(file_object):
         raise FileNotFoundError
     set_words = set(map(str.lower, search_words))
-    # Если объект имеет атрибут name,
-    # то возращает значение атрибута, иначе возращает имя файла
+
     if isinstance(file_object, io.IOBase):
         file = file_object
     else:
