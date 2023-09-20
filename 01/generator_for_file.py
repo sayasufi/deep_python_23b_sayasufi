@@ -22,8 +22,12 @@ def gen_search_words(file_object, search_words):
     set_words = set(map(str.lower, search_words))
     # Если объект имеет атрибут name,
     # то возращает значение атрибута, иначе возращает имя файла
-    file_name = getattr(file_object, "name", file_object)
-    with open(file_name, "r", encoding="UTF-8") as file:
+    if isinstance(file_object, io.IOBase):
+        file = file_object
+    else:
+        file = open(file_object, "r", encoding="UTF-8")
+
+    with file:
         for line in file:
             if set_words & set(line.lower().split()):
                 yield line.strip()
