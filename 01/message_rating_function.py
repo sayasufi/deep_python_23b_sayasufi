@@ -3,47 +3,56 @@
 Функция оценки сообщения
 """
 
-from model import SomeModel
+
+class SomeModel:
+    """Класс модели"""
+
+    def predict(self, message: str) -> float:
+        """Функция возращающая от 0 до 1"""
+
+    def another_method(self):
+        """
+        Вторая функция, чтобы не ругался pylint
+        """
 
 
 def predict_message_mood(
     message: str,
     model: SomeModel,
-    bad_thresholds: float = 0.3,
-    good_thresholds: float = 0.8,
+    bad_threshold: float = 0.3,
+    good_threshold: float = 0.8,
 ) -> str:
-    """Возвращает оценку в зависимости от результата выполнения предсказания
-    модели."""
-    # Проверка корректности типа данных модели
-    if not isinstance(model, SomeModel) or not isinstance(message, str):
-        raise TypeError
+    """Функция оценки"""
+    if not isinstance(message, str):
+        raise TypeError("message должен быть строкой")
+    if not isinstance(model, SomeModel):
+        raise TypeError("model должен быть экземпляром класса SomeModel")
+    if not isinstance(bad_threshold, (float, int)) or not isinstance(
+        good_threshold, (float, int)
+    ):
+        raise TypeError(
+            "bad_threshold и good_threshold "
+            "должны быть числами с плавающей точкой"
+        )
+    if bad_threshold < 0 or good_threshold < 0:
+        raise ValueError(
+            "bad_threshold и good_threshold должны быть положительными числами"
+        )
+    if bad_threshold > 1 or good_threshold > 1:
+        raise ValueError("bad_threshold и good_threshold должны быть меньше 1")
+    if bad_threshold > good_threshold:
+        raise ValueError(
+            "bad_threshold должен быть меньше, чем good_threshold"
+        )
 
     prediction = model.predict(message)
-
-    # Проверка корректности типов входных данных
-    if any(
-        (
-            not isinstance(prediction, (float, int)),
-            not isinstance(bad_thresholds, (float, int)),
-            not isinstance(good_thresholds, (float, int)),
-        )
-    ):
-        raise TypeError
-
-    # Проверка корректности значений входных данных
-    if any(
-        (
-            bad_thresholds > good_thresholds,
-            not 0 <= bad_thresholds <= 1,
-            not 0 <= good_thresholds <= 1,
-        )
-    ):
+    if not isinstance(prediction, (float, int)):
+        raise TypeError("prediction должно быть числом с плавающей точкой")
+    if prediction > 1 or prediction < 0:
         raise ValueError
 
-    if 0 <= prediction < bad_thresholds:
+    if prediction < bad_threshold:
         return "неуд"
-    if 1 >= prediction > good_thresholds:
+    if prediction > good_threshold:
         return "отл"
-    if bad_thresholds <= prediction <= good_thresholds:
-        return "норм"
-    raise ValueError
+    return "норм"

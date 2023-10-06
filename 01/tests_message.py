@@ -4,10 +4,8 @@
 """
 
 import unittest
-from unittest import mock
-
-from model import SomeModel
-from message_rating_function import predict_message_mood
+from unittest.mock import MagicMock
+from message_rating_function import SomeModel, predict_message_mood
 
 
 class TestPredictMessageMood(unittest.TestCase):
@@ -15,126 +13,186 @@ class TestPredictMessageMood(unittest.TestCase):
 
     def setUp(self):
         print("SETUP")
+        self.model = SomeModel()
 
     def tearDown(self):
         print("TEAR_DOWN")
 
-    # Тест 1
-    def test_norm(self):
-        """
-        Проверка валидных данных,
-        при данных функции predict, получаем норм
-        """
-        # Мокаем функцию, подменяя выходные данные
-        with mock.patch(
-            "message_rating_function.SomeModel.predict"
-        ) as mock_fetch:
-            mock_fetch.side_effect = [0.4, 0.3, 0.8]
-            self.assertEqual("норм", predict_message_mood("", SomeModel()))
-            self.assertEqual("норм", predict_message_mood("", SomeModel()))
-            self.assertEqual("норм", predict_message_mood("", SomeModel()))
+    def test_neud_when_prediction_less_than_bad_threshold(self):
+        """Тесты для неуд"""
+        self.model.predict = MagicMock(return_value=0.2)
+        result = predict_message_mood(
+            "Some message", self.model, bad_threshold=0.3, good_threshold=0.8
+        )
+        self.assertEqual(result, "неуд")
 
-    # Тест 2
-    def test_otl(self):
-        """
-        Проверка валидных данных,
-        при данных функции predict, получаем отл
-        """
-        with mock.patch(
-            "message_rating_function.SomeModel.predict"
-        ) as mock_fetch:
-            mock_fetch.side_effect = [0.9, 1]
-            self.assertEqual("отл", predict_message_mood("", SomeModel()))
-            self.assertEqual("отл", predict_message_mood("", SomeModel()))
+        self.model.predict = MagicMock(return_value=0)
+        result = predict_message_mood(
+            "Some message", self.model, bad_threshold=0.3, good_threshold=0.8
+        )
+        self.assertEqual(result, "неуд")
 
-    # Тест 3
-    def test_udovl(self):
-        """
-        Проверка валидных данных,
-        при данных функции predict, получаем неуд
-        """
-        with mock.patch(
-            "message_rating_function.SomeModel.predict"
-        ) as mock_fetch:
-            mock_fetch.side_effect = [0.2, 0]
-            self.assertEqual("неуд", predict_message_mood("", SomeModel()))
-            self.assertEqual("неуд", predict_message_mood("", SomeModel()))
+    def test_otl_when_prediction_greater_than_good_threshold(self):
+        """Тесты для отл"""
+        self.model.predict = MagicMock(return_value=0.9)
+        result = predict_message_mood(
+            "Some message", self.model, bad_threshold=0.3, good_threshold=0.8
+        )
+        self.assertEqual(result, "отл")
 
-    # Тест 4
-    def test_invalid_input_data(self):
-        """
-        Проверка ошибки ValueError,
-        если передаваемые значения выходят за границы
-        """
-        with mock.patch(
-            "message_rating_function.SomeModel.predict"
-        ) as mock_fetch:
-            mock_fetch.side_effect = [3, -1, 0.4, 1, 1]
-            self.assertRaises(
-                ValueError, predict_message_mood, "", SomeModel()
-            )
-            self.assertRaises(
-                ValueError, predict_message_mood, "", SomeModel()
-            )
-            self.assertRaises(
-                ValueError,
-                predict_message_mood,
-                "",
-                SomeModel(),
-                bad_thresholds=1,
-                good_thresholds=0.5,
-            )
-            self.assertRaises(
-                ValueError,
-                predict_message_mood,
-                "",
-                SomeModel(),
-                bad_thresholds=-1,
-                good_thresholds=0.5,
-            )
-            self.assertRaises(
-                ValueError,
-                predict_message_mood,
-                "",
-                SomeModel(),
-                bad_thresholds=0.5,
-                good_thresholds=4,
-            )
+        self.model.predict = MagicMock(return_value=1)
+        result = predict_message_mood(
+            "Some message", self.model, bad_threshold=0.3, good_threshold=0.8
+        )
+        self.assertEqual(result, "отл")
 
-    # Тест 5
-    def test_incorrect_data_type(self):
-        """
-        Проверка ошибки TypeError,
-        если передаваемые значения не удовлетворяют типу данных
-        """
-        with mock.patch(
-            "message_rating_function.SomeModel.predict"
-        ) as mock_fetch:
-            mock_fetch.side_effect = ["3", "ddd", 1, 1, 1, 1, 1]
-            self.assertRaises(TypeError, predict_message_mood, "", SomeModel())
-            self.assertRaises(TypeError, predict_message_mood, "", SomeModel())
-            self.assertRaises(TypeError, predict_message_mood, 1, SomeModel())
-            self.assertRaises(TypeError, predict_message_mood, "", {})
-            self.assertRaises(
-                TypeError,
-                predict_message_mood,
-                "",
-                SomeModel(),
-                bad_thresholds="",
-            )
-            self.assertRaises(
-                TypeError,
-                predict_message_mood,
-                "",
-                SomeModel(),
-                good_thresholds=[1],
-            )
-            self.assertRaises(
-                TypeError,
-                predict_message_mood,
-                "",
-                SomeModel(),
-                1,
-                bad_thresholds=0.3,
-                good_thresholds=0.8,
-            )
+    def test_norm_when_prediction_between_thresholds(self):
+        """Тесты для норм"""
+        self.model.predict = MagicMock(return_value=0.3)
+        result = predict_message_mood(
+            "Some message", self.model, bad_threshold=0.3, good_threshold=0.8
+        )
+        self.assertEqual(result, "норм")
+
+        self.model.predict = MagicMock(return_value=0.4)
+        result = predict_message_mood(
+            "Some message", self.model, bad_threshold=0.3, good_threshold=0.8
+        )
+        self.assertEqual(result, "норм")
+
+        self.model.predict = MagicMock(return_value=0.8)
+        result = predict_message_mood(
+            "Some message", self.model, bad_threshold=0.3, good_threshold=0.8
+        )
+        self.assertEqual(result, "норм")
+
+        self.model.predict = MagicMock(return_value=0.7)
+        result = predict_message_mood(
+            "Some message", self.model, bad_threshold=0.3, good_threshold=0.8
+        )
+        self.assertEqual(result, "норм")
+
+    def test_changing_thresholds(self):
+        """Тесты для изменяющихся порогов"""
+        self.model.predict = MagicMock(return_value=0.2)
+        result = predict_message_mood(
+            "Some message", self.model, bad_threshold=0.2, good_threshold=1
+        )
+        self.assertEqual(result, "норм")
+
+        self.model.predict = MagicMock(return_value=0.4)
+        result = predict_message_mood(
+            "Some message", self.model, bad_threshold=0, good_threshold=0.4
+        )
+        self.assertEqual(result, "норм")
+
+        self.model.predict = MagicMock(return_value=1)
+        result = predict_message_mood(
+            "Some message", self.model, bad_threshold=1, good_threshold=1
+        )
+        self.assertEqual(result, "норм")
+
+        self.model.predict = MagicMock(return_value=1)
+        result = predict_message_mood(
+            "Some message", self.model, bad_threshold=0, good_threshold=0.1
+        )
+        self.assertEqual(result, "отл")
+
+        self.model.predict = MagicMock(return_value=0)
+        result = predict_message_mood(
+            "Some message", self.model, bad_threshold=0.9, good_threshold=1
+        )
+        self.assertEqual(result, "неуд")
+
+    def test_raises_value_error_when_bad_threshold_greater_than_good_threshold(
+        self,
+    ):
+        """Хороший порог ниже плохого"""
+        self.assertRaises(
+            ValueError,
+            predict_message_mood,
+            "Some message",
+            self.model,
+            bad_threshold=0.8,
+            good_threshold=0.3,
+        )
+
+    def test_raises_predict_error(self):
+        """Неверный тип данных функции обработчика"""
+        self.model.predict = MagicMock(return_value="dfg")
+        self.assertRaises(
+            TypeError, predict_message_mood, "Some message", self.model
+        )
+
+        self.model.predict = MagicMock(return_value=[0.3])
+        self.assertRaises(
+            TypeError, predict_message_mood, "Some message", self.model
+        )
+
+        self.model.predict = MagicMock(return_value=1.1)
+        self.assertRaises(
+            ValueError, predict_message_mood, "Some message", self.model
+        )
+
+        self.model.predict = MagicMock(return_value=-0.1)
+        self.assertRaises(
+            ValueError, predict_message_mood, "Some message", self.model
+        )
+
+    def test_raises_type_error(self):
+        """Неверных тип входных данных"""
+        self.assertRaises(TypeError, predict_message_mood, 123, self.model)
+        self.assertRaises(
+            TypeError,
+            predict_message_mood,
+            "Some message",
+            "Not a SomeModel instance",
+        )
+        self.assertRaises(
+            TypeError,
+            predict_message_mood,
+            "Some message",
+            self.model,
+            bad_threshold="ss",
+        )
+        self.assertRaises(
+            TypeError,
+            predict_message_mood,
+            "Some message",
+            self.model,
+            good_threshold=[1],
+        )
+
+    def test_raises_value_error_when_is_negative(self):
+        """Неверные значения порогов, меньше 0"""
+        self.assertRaises(
+            ValueError,
+            predict_message_mood,
+            "Some message",
+            self.model,
+            bad_threshold=-1,
+        )
+        self.assertRaises(
+            ValueError,
+            predict_message_mood,
+            "Some message",
+            self.model,
+            good_threshold=-0.1,
+        )
+
+    def test_raises_value_error_when_is_more1(self):
+        """Неверные значения порогов, больше 1"""
+        self.assertRaises(
+            ValueError,
+            predict_message_mood,
+            "Some message",
+            self.model,
+            bad_threshold=2,
+        )
+        self.assertRaises(
+            ValueError,
+            predict_message_mood,
+            "Some message",
+            self.model,
+            good_threshold=1.1,
+        )

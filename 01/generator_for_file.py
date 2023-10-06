@@ -10,21 +10,29 @@ import io
 def gen_search_words(file_object, search_words):
     """Функция генератора для чтения и фильтрации файла"""
     # Проверка корректности типов входных данных
-    if (
-        not isinstance(search_words, list)
-        or not isinstance(file_object, (io.IOBase, str))
-        or any(not isinstance(n, str) for n in search_words)
+    if not isinstance(file_object, str) and not isinstance(
+        file_object, io.IOBase
     ):
-        raise TypeError
-    # Проверка того, что объект является файловым объектом
-    if isinstance(file_object, str) and not os.path.exists(file_object):
-        raise FileNotFoundError
-    set_words = set(map(str.lower, search_words))
+        raise TypeError(
+            "Invalid file input. Expected a file name or file object."
+        )
+    if isinstance(file_object, str):
+        if not os.path.exists(file_object):
+            raise FileNotFoundError
+    if not isinstance(search_words, list):
+        raise TypeError(
+            "Invalid search words input. Expected a list of words."
+        )
+    for i in search_words:
+        if not isinstance(i, str):
+            raise TypeError("Invalid search words input. Expected str.")
 
     if isinstance(file_object, io.IOBase):
         file = file_object
     else:
         file = open(file_object, "r", encoding="UTF-8")
+
+    set_words = set(map(lambda x: x.lower(), search_words))
 
     with file:
         for line in file:
