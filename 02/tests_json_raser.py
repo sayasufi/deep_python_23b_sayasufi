@@ -3,12 +3,17 @@
 Тесты для функции
 """
 import unittest
-from unittest.mock import patch
+from unittest import mock
+
 from json_filter_func import parse_json
 
 
-class TestParseJson(unittest.TestCase):
-    """Unittest класс с тестами"""
+class ParseJsonTestCase(unittest.TestCase):
+    """Тесты для функции"""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.keyword_callback = mock.Mock(return_value="new_value")
 
     def setUp(self):
         print("SETUP")
@@ -16,136 +21,136 @@ class TestParseJson(unittest.TestCase):
     def tearDown(self):
         print("TEAR_DOWN")
 
-    def test_correct_work(self):
-        """Проверка валидных данных"""
-        with patch("json_filter_func.change_word") as mock_fetch:
-            mock_fetch.return_value = "измененное слово"
-            # Проверки с валидными условиями
-            self.assertEqual(
-                '{"key1": "Word1 измененное слово", "key2": "word2 word3"}',
-                parse_json(
-                    '{"key1": "Word1 word2", "key2": "word2 word3"}',
-                    ["key1"],
-                    ["wOrD2"],
-                    keyword_callback=mock_fetch,
-                ),
-            )
-            self.assertEqual(
-                '{"key1": "Word1 измененное слово измененное слово", '
-                '"key2": "word2 word3"}',
-                parse_json(
-                    '{"key1": "Word1 word2 word4", "key2": "word2 word3"}',
-                    ["key1"],
-                    ["wOrD2", "word4"],
-                    keyword_callback=mock_fetch,
-                ),
-            )
-            self.assertEqual(
-                '{"key1": "Word1 измененное слово измененное слово", '
-                '"key2": "измененное слово word3"}',
-                parse_json(
-                    '{"key1": "Word1 word2 word4", "key2": "word2 word3"}',
-                    ["key1", "key2"],
-                    ["wOrD2", "word4"],
-                    keyword_callback=mock_fetch,
-                ),
-            )
-            # Проверка с дефолтными аргументами
-            self.assertEqual(
-                '{"key1": "Word1 word2", "key2": "word2 word3"}',
-                parse_json('{"key1": "Word1 word2", "key2": "word2 word3"}'),
-            )
-            # Проверка с отсутствующим ключом в json-строке
-            self.assertEqual(
-                '{"key1": "Word1 word2", "key2": "word2 word3"}',
-                parse_json(
-                    '{"key1": "Word1 word2", "key2": "word2 word3"}',
-                    ["key3"],
-                    ["wOrD2", "word4"],
-                    keyword_callback=mock_fetch,
-                ),
-            )
-            # Проверка с пустым списком ключей
-            self.assertEqual(
-                '{"key1": "Word1 word2", "key2": "word2 word3"}',
-                parse_json(
-                    '{"key1": "Word1 word2", "key2": "word2 word3"}',
-                    [],
-                    ["wOrD2", "word4"],
-                    keyword_callback=mock_fetch,
-                ),
-            )
-            self.assertEqual(len(mock_fetch.mock_calls), 6)
+    def test_parse_json_valid(self):
+        """Тест для валидных данных"""
+        json_str = '{"key1": "Word1 word2", "key2": "word2 word3"}'
+        required_fields = ["key1"]
+        keywords = ["word2"]
+        result = parse_json(
+            json_str, required_fields, keywords, self.keyword_callback
+        )
+        self.assertEqual(
+            result, '{"key1": "Word1 new_value", "key2": "word2 word3"}'
+        )
+        self.keyword_callback.assert_called_once_with("word2")
 
-    def test_invalid_incorrect_data_type(self):
-        """Проверка ошибки TypeError"""
-        with patch("json_filter_func.change_word") as mock_fetch:
-            mock_fetch.return_value = "измененное слово"
-            # Проверка с неверным типом json_str
-            self.assertRaises(
-                TypeError, parse_json, 1, keyword_callback=mock_fetch
-            )
-            # Проверка с неверным типом required_fields
-            self.assertRaises(
-                TypeError, parse_json, "", 1, [""], keyword_callback=mock_fetch
-            )
-            # Проверка с неверным типом keywords
-            self.assertRaises(
-                TypeError,
-                parse_json,
-                "",
-                required_fields=["test"],
-                keywords=1,
-                keyword_callback=mock_fetch,
-            )
-            # Проверка с неверным типом keyword_callback
-            self.assertRaises(
-                TypeError,
-                parse_json,
-                "",
-                required_fields=["test"],
-                keywords=["test"],
-                keyword_callback=1,
-            )
-            # Проверка с неверным типом элемента required_fields
-            self.assertRaises(
-                TypeError,
-                parse_json,
-                "",
-                required_fields=[1],
-                keywords=["test"],
-                keyword_callback=mock_fetch,
-            )
-            # Проверка с неверным типом элемента keywords
-            self.assertRaises(
-                TypeError,
-                parse_json,
-                "",
-                required_fields=["test"],
-                keywords=[1],
-                keyword_callback=mock_fetch,
-            )
-            self.assertEqual(len(mock_fetch.mock_calls), 0)
+    def test_parse_json_empty(self):
+        """Тест для пустых значений"""
+        json_str = '{"key1": "Word1 word2", "key2": "word2 word3"}'
+        required_fields = []
+        keywords = ["word2"]
+        result = parse_json(
+            json_str, required_fields, keywords, self.keyword_callback
+        )
+        self.assertEqual(
+            result, '{"key1": "Word1 word2", "key2": "word2 word3"}'
+        )
 
-    def test_invalid_incorrect_data(self):
-        """Проверка ошибки ValueError"""
-        with patch("json_filter_func.change_word") as mock_fetch:
-            mock_fetch.return_value = "измененное слово"
-            # Проверки с неверным значением json_str
-            self.assertRaises(
-                ValueError,
-                parse_json,
-                "",
-                ["test"],
-                ["test"],
-                keyword_callback=mock_fetch,
+        json_str = '{"key1": "Word1 word2", "key2": "word2 word3"}'
+        required_fields = ["key1"]
+        keywords = []
+        result = parse_json(
+            json_str, required_fields, keywords, self.keyword_callback
+        )
+        self.assertEqual(
+            result, '{"key1": "Word1 word2", "key2": "word2 word3"}'
+        )
+
+    def test_parse_json_none_values(self):
+        """Тест для не переданных значений"""
+        json_str = '{"key1": "Word1 word2", "key2": "word2 word3"}'
+        required_fields = ["key1"]
+        keywords = ["word2"]
+
+        result = parse_json(json_str, keywords, self.keyword_callback)
+        self.assertEqual(
+            result, '{"key1": "Word1 word2", "key2": "word2 word3"}'
+        )
+
+        result = parse_json(json_str, required_fields, self.keyword_callback)
+        self.assertEqual(
+            result, '{"key1": "Word1 word2", "key2": "word2 word3"}'
+        )
+
+        result = parse_json(json_str, required_fields, keywords)
+        self.assertEqual(
+            result, '{"key1": "Word1 word2", "key2": "word2 word3"}'
+        )
+
+    def test_parse_json_missing_required_fields(self):
+        """Тест для отсутствующего ключа"""
+        json_str = '{"key2": "word2 word3"}'
+        required_fields = ["key1"]
+        keywords = ["word2"]
+
+        result = parse_json(
+            json_str, required_fields, keywords, self.keyword_callback
+        )
+
+        self.assertEqual(result, '{"key2": "word2 word3"}')
+
+        self.keyword_callback.assert_not_called()
+
+    def test_parse_json_missing_keywords(self):
+        """Тест для отсутствующего значения"""
+        json_str = '{"key1": "Word1 word2", "key2": "word2 word3"}'
+        required_fields = ["key1"]
+        keywords = ["word4"]
+
+        result = parse_json(
+            json_str, required_fields, keywords, self.keyword_callback
+        )
+
+        self.assertEqual(
+            result, '{"key1": "Word1 word2", "key2": "word2 word3"}'
+        )
+        self.keyword_callback.assert_not_called()
+
+    def test_parse_json_invalid_json(self):
+        """Тест для неверной json строки"""
+        json_str = '{"key1": "Word1 word2", "key2": "word2 word3"'
+        required_fields = ["key1"]
+        keywords = ["word2"]
+
+        with self.assertRaises(ValueError):
+            parse_json(
+                json_str, required_fields, keywords, self.keyword_callback
             )
-            self.assertRaises(
-                ValueError,
-                parse_json,
-                "52",
-                ["test"],
-                ["test"],
-                keyword_callback=mock_fetch,
+
+        self.keyword_callback.assert_not_called()
+
+    def test_parse_json_invalid_arguments(self):
+        """Тест для неверного типа данных"""
+        json_str = '{"key1": "Word1 word2", "key2": "word2 word3"}'
+        required_fields = "key1"
+        keywords = ["word2"]
+        with self.assertRaises(TypeError):
+            parse_json(
+                json_str, required_fields, keywords, self.keyword_callback
             )
-            self.assertEqual(len(mock_fetch.mock_calls), 0)
+        self.keyword_callback.assert_not_called()
+
+        json_str = '{"key1": "Word1 word2", "key2": "word2 word3"}'
+        required_fields = ["key1"]
+        keywords = "word2"
+        with self.assertRaises(TypeError):
+            parse_json(
+                json_str, required_fields, keywords, self.keyword_callback
+            )
+        self.keyword_callback.assert_not_called()
+
+        json_str = 1
+        required_fields = ["key1"]
+        keywords = ["word2"]
+        with self.assertRaises(TypeError):
+            parse_json(
+                json_str, required_fields, keywords, self.keyword_callback
+            )
+        self.keyword_callback.assert_not_called()
+
+        json_str = '{"key1": "Word1 word2", "key2": "word2 word3"}'
+        required_fields = ["key1"]
+        keywords = ["word2"]
+        with self.assertRaises(TypeError):
+            parse_json(json_str, required_fields, keywords, 1)
+        self.keyword_callback.assert_not_called()

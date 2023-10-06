@@ -19,57 +19,80 @@ class TestDecorator(unittest.TestCase):
 
     def test_average_execution_time(self):
         """Проверка валидных данных"""
-        with mock.patch("timer_decorator.time.perf_counter") as mock_fetch:
+        mock_print = mock.Mock()
+        with mock.patch("timer_decorator.time.time") as mock_fetch, mock.patch(
+            "builtins.print", mock_print
+        ):
             mock_fetch.side_effect = (0, 1, 0, 1, 0, 1, 0, 10)
 
             @mean(3)
-            def my_function():
-                pass
-
-            for i in range(2):
-                self.assertEqual(my_function(), None)
-
-            self.assertEqual(my_function(), 1)
-            self.assertEqual(my_function(), 4)
-            self.assertEqual(mock_fetch.call_count, 8)
-            self.assertEqual(
-                my_function.__name__, "my_function"
-            )  # Function name is preserved
-            self.assertEqual(
-                my_function.__doc__, None
-            )  # Function docstring is preserved
-
-        with mock.patch("timer_decorator.time.perf_counter") as mock_fetch:
-            mock_fetch.side_effect = (0, 2, 0, 2, 0, 2)
-
-            @mean(1)
-            def my_function1():
+            def function1():
                 pass
 
             for i in range(3):
-                self.assertEqual(my_function1(), 2)
+                function1()
 
-            self.assertEqual(mock_fetch.call_count, 6)
+            self.assertEqual(
+                mock_print.call_args[0][0],
+                "Average execution time of last 3 calls: 1.0 seconds",
+            )
+            function1()
+            self.assertEqual(
+                mock_print.call_args[0][0],
+                "Average execution time of last 3 calls: 4.0 seconds",
+            )
+            self.assertEqual(mock_fetch.call_count, 8)
+            self.assertEqual(
+                function1.__name__, "function1"
+            )  # Function name is preserved
+            self.assertEqual(
+                function1.__doc__, None
+            )  # Function docstring is preserved
 
-        with mock.patch("timer_decorator.time.perf_counter") as mock_fetch:
+            mock_fetch.side_effect = (0, 2, 0, 2, 0, 2)
+
+            @mean(1)
+            def function2():
+                pass
+
+            for i in range(3):
+                function2()
+                self.assertEqual(
+                    mock_print.call_args[0][0],
+                    "Average execution time of last 1 calls: 2.0 seconds",
+                )
+
+            self.assertEqual(mock_fetch.call_count, 6 + 8)
+
             mock_fetch.side_effect = [0 if i < 80 else i for i in range(100)]
 
             @mean(10)
-            def my_function2():
+            def function3():
                 pass
 
-            for _ in range(9):  # 50 - 9 = 41
-                self.assertEqual(my_function2(), None)
+            for i in range(9):  # 50 - 9 = 41
+                function3()
+                self.assertEqual(
+                    mock_print.call_args[0][0],
+                    f"Average execution time of last {i + 1} calls: "
+                    f"0.0 seconds",
+                )
 
             for _ in range(31):  # 41 - 31 = 10
-                self.assertEqual(my_function2(), 0)
+                function3()
+                self.assertEqual(
+                    mock_print.call_args[0][0],
+                    "Average execution time of last 10 calls: 0.0 seconds",
+                )
 
-            for _ in range(9):  # 10 - 9 = 1
-                my_function2()
+            for _ in range(10):  # 10 - 9 = 1
+                function3()
+            self.assertEqual(
+                mock_print.call_args[0][0],
+                "Average execution time of last 10 calls: 1.0 seconds",
+            )
 
-            # Последний прогон
-            self.assertEqual(my_function2(), 1)
-            self.assertEqual(mock_fetch.call_count, 100)
+            self.assertEqual(mock_fetch.call_count, 100 + 6 + 8)
 
     def test_invalid_incorrect_data_type(self):
         """Проверка ошибки TypeError"""
