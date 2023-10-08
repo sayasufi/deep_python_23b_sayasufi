@@ -13,7 +13,7 @@ class ParseJsonTestCase(unittest.TestCase):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.keyword_callback = mock.Mock(return_value="new_value")
+        self.keyword_callback = mock.Mock()
 
     def setUp(self):
         print("SETUP")
@@ -26,35 +26,60 @@ class ParseJsonTestCase(unittest.TestCase):
         json_str = '{"key1": "Word1 word2", "key2": "word2 word3"}'
         required_fields = ["key1"]
         keywords = ["word2"]
-        result = parse_json(
-            json_str, required_fields, keywords, self.keyword_callback
+        parse_json(json_str, required_fields, keywords, self.keyword_callback)
+        self.keyword_callback.assert_called_once()
+        self.keyword_callback.assert_called_with("key1", "word2")
+
+    def test_parse_json_some_values(self):
+        """Несколько найденных required_field и keyword"""
+        json_str = '{"key1": "Word1 word2", "key2": "word3 word4"}'
+        required_fields = ["key1", "key2"]
+        keywords = ["word2", "word1", "WORD4"]
+        parse_json(json_str, required_fields, keywords, self.keyword_callback)
+
+        self.keyword_callback.assert_has_calls(
+            [
+                mock.call("key1", "word2"),
+                mock.call("key1", "word1"),
+                mock.call("key2", "WORD4"),
+            ]
         )
-        self.assertEqual(
-            result, '{"key1": "Word1 new_value", "key2": "word2 word3"}'
+        self.assertEqual(self.keyword_callback.call_count, 3)
+
+    def test_parse_json_match_of_several_keywords(self):
+        """Совпадение нескольких keyword в одной строке"""
+        json_str = (
+            '{"key1": "Word1 word2 word3word1 word1 WORD1",'
+            ' "key2": "word3 word4"}'
         )
-        self.keyword_callback.assert_called_once_with("word2")
+        required_fields = ["key1"]
+        keywords = ["word1"]
+        parse_json(json_str, required_fields, keywords, self.keyword_callback)
+
+        self.keyword_callback.assert_called_once()
+        self.keyword_callback.assert_called_with("key1", "word1")
+
+    def test_parse_json_valid_word_in_string(self):
+        """Тест на полное совпадение"""
+        json_str = '{"key1": "Word1word2", "key2": "word2 word3"}'
+        required_fields = ["key1"]
+        keywords = ["word2"]
+        parse_json(json_str, required_fields, keywords, self.keyword_callback)
+        self.keyword_callback.assert_not_called()
 
     def test_parse_json_empty(self):
         """Тест для пустых значений"""
         json_str = '{"key1": "Word1 word2", "key2": "word2 word3"}'
         required_fields = []
         keywords = ["word2"]
-        result = parse_json(
-            json_str, required_fields, keywords, self.keyword_callback
-        )
-        self.assertEqual(
-            result, '{"key1": "Word1 word2", "key2": "word2 word3"}'
-        )
+        parse_json(json_str, required_fields, keywords, self.keyword_callback)
+        self.keyword_callback.assert_not_called()
 
         json_str = '{"key1": "Word1 word2", "key2": "word2 word3"}'
         required_fields = ["key1"]
         keywords = []
-        result = parse_json(
-            json_str, required_fields, keywords, self.keyword_callback
-        )
-        self.assertEqual(
-            result, '{"key1": "Word1 word2", "key2": "word2 word3"}'
-        )
+        parse_json(json_str, required_fields, keywords, self.keyword_callback)
+        self.keyword_callback.assert_not_called()
 
     def test_parse_json_none_values(self):
         """Тест для не переданных значений"""
@@ -62,20 +87,14 @@ class ParseJsonTestCase(unittest.TestCase):
         required_fields = ["key1"]
         keywords = ["word2"]
 
-        result = parse_json(json_str, keywords, self.keyword_callback)
-        self.assertEqual(
-            result, '{"key1": "Word1 word2", "key2": "word2 word3"}'
-        )
+        parse_json(json_str, keywords, self.keyword_callback)
+        self.keyword_callback.assert_not_called()
 
-        result = parse_json(json_str, required_fields, self.keyword_callback)
-        self.assertEqual(
-            result, '{"key1": "Word1 word2", "key2": "word2 word3"}'
-        )
+        parse_json(json_str, required_fields, self.keyword_callback)
+        self.keyword_callback.assert_not_called()
 
-        result = parse_json(json_str, required_fields, keywords)
-        self.assertEqual(
-            result, '{"key1": "Word1 word2", "key2": "word2 word3"}'
-        )
+        parse_json(json_str, required_fields, keywords)
+        self.keyword_callback.assert_not_called()
 
     def test_parse_json_missing_required_fields(self):
         """Тест для отсутствующего ключа"""
@@ -83,11 +102,7 @@ class ParseJsonTestCase(unittest.TestCase):
         required_fields = ["key1"]
         keywords = ["word2"]
 
-        result = parse_json(
-            json_str, required_fields, keywords, self.keyword_callback
-        )
-
-        self.assertEqual(result, '{"key2": "word2 word3"}')
+        parse_json(json_str, required_fields, keywords, self.keyword_callback)
 
         self.keyword_callback.assert_not_called()
 
@@ -97,13 +112,8 @@ class ParseJsonTestCase(unittest.TestCase):
         required_fields = ["key1"]
         keywords = ["word4"]
 
-        result = parse_json(
-            json_str, required_fields, keywords, self.keyword_callback
-        )
+        parse_json(json_str, required_fields, keywords, self.keyword_callback)
 
-        self.assertEqual(
-            result, '{"key1": "Word1 word2", "key2": "word2 word3"}'
-        )
         self.keyword_callback.assert_not_called()
 
     def test_parse_json_invalid_json(self):

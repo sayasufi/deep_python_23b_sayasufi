@@ -9,8 +9,9 @@
 import json
 
 
-def callback() -> str:
+def callback(field, word):
     """Функция, обрабатывающая найденное слово"""
+    print(f"Keyword '{word}' was found in field '{field}'")
 
 
 def parse_json(
@@ -20,7 +21,7 @@ def parse_json(
     if any(
         (required_fields is None, keywords is None, keyword_callback is None)
     ):
-        return json_str
+        return
     # Проверяем аргументы на типы
     if not isinstance(json_str, str):
         raise TypeError("json_str должен быть строкой")
@@ -33,7 +34,7 @@ def parse_json(
         raise TypeError("keyword_callback должен быть функцией")
 
     if not required_fields or not keywords:
-        return json_str
+        return
     # Парсим JSON
     try:
         json_doc = json.loads(json_str)
@@ -43,15 +44,7 @@ def parse_json(
     # Обрабатываем каждое поле
     for field in required_fields:
         if field in json_doc:
-            value = json_doc[field]
             # Проверяем наличие ключевых имён в значении
             for keyword in keywords:
-                if keyword.lower() in value.lower():
-                    # Вызываем функцию-обработчик
-                    if keyword_callback is not None:
-                        new_value = keyword_callback(keyword)
-                        # Заменяем найденное слово в значении
-                        value = value.replace(keyword, new_value)
-            json_doc[field] = value
-
-    return json.dumps(json_doc, ensure_ascii=False)
+                if keyword.lower() in json_doc[field].lower().split():
+                    keyword_callback(field, keyword)
