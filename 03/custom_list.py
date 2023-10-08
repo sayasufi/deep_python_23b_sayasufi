@@ -28,6 +28,17 @@ class CustomList(list):
             result[i] += item
         return result
 
+    def __radd__(self, other):
+        if isinstance(other, list):
+            other = CustomList(other)
+        elif not isinstance(other, CustomList):
+            raise TypeError
+        result = CustomList(self)
+        result.extend([0] * (len(other) - len(result)))
+        for i, item in enumerate(other):
+            result[i] += item
+        return result
+
     def __sub__(self, other):
         if isinstance(other, list):
             other = CustomList(other)
