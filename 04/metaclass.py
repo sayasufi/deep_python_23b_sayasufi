@@ -10,15 +10,17 @@ import copy
 class CustomMeta(type):
     """Мета класс"""
 
-    def __new__(mcs, name, bases, classdict):
-        classdict_clone = copy.deepcopy(classdict)
-        for attr_name, attr_value in classdict.items():
-            if not attr_name[:2] + attr_name[
-                -2:
-            ] == "____" and not attr_name.startswith("custom_"):
-                classdict_clone["custom_" + attr_name] = attr_value
-                del classdict_clone[attr_name]
-        return super().__new__(mcs, name, bases, classdict_clone)
+    @staticmethod
+    def create_custom_setattr(cls_obj, key, value):
+        """Создание кастомного setattr"""
+        if not (key.endswith("__") and key.startswith("__")):
+            # __private и _protected атрибуты
+            if key.startswith("_"):
+                object.__setattr__(cls_obj, f"_custom_{key[1:]}", value)
+            else:
+                object.__setattr__(cls_obj, f"custom_{key}", value)
+        else:
+            object.__setattr__(cls_obj, key, value)
 
     def __init__(cls, name, bases, classdict):
         super().__init__(name, bases, classdict)
@@ -26,30 +28,27 @@ class CustomMeta(type):
     def __call__(cls, *args, **kwargs):
         return super().__call__(*args, **kwargs)
 
+    def __new__(mcs, name, bases, class_dict, **kwargs):
+        class_dict_clone = copy.deepcopy(class_dict)
+        for attr_name, attr_value in class_dict.items():
+            if not (attr_name.endswith("__") and attr_name.startswith("__")):
+                # __private и _protected атрибуты
+                if attr_name.startswith("_"):
+                    class_dict_clone[f"_custom_{attr_name[1:]}"] = attr_value
+                    del class_dict_clone[attr_name]
+
+                else:
+                    class_dict_clone["custom_" + attr_name] = attr_value
+                    del class_dict_clone[attr_name]
+
+        class_dict_clone["__setattr__"] = mcs.create_custom_setattr
+        return super().__new__(mcs, name, bases, class_dict_clone, **kwargs)
+
     def __setattr__(cls, attr_name, attr_value):
-        if not attr_name[:2] + attr_name[-2:] == "____":
-            attr_name = "custom_" + attr_name
+        if not (attr_name.endswith("__") and attr_name.startswith("__")):
+            # __private и _protected атрибуты
+            if attr_name.startswith("_"):
+                attr_name = f"_custom_{attr_name[1:]}"
+            else:
+                attr_name = "custom_" + attr_name
         super().__setattr__(attr_name, attr_value)
-
-
-class CustomClass(metaclass=CustomMeta):
-    """Наследуемый класс"""
-
-    x = 50
-
-    def __init__(self, val=99):
-        self.val = val
-
-    def line(self):
-        """Функция возвращающая 100"""
-        return 100
-
-    def __str__(self):
-        return "Custom_by_metaclass"
-
-    def __setattr__(self, attr_name, attr_value):
-        if not attr_name[:2] + attr_name[
-            -2:
-        ] == "____" and not attr_name.startswith("custom_"):
-            attr_name = "custom_" + attr_name
-        self.__dict__[attr_name] = attr_value

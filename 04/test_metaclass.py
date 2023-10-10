@@ -4,7 +4,27 @@
 """
 
 import unittest
-from metaclass import CustomClass
+from metaclass import CustomMeta
+
+
+class CustomClass(metaclass=CustomMeta):
+    """Наследуемый класс"""
+
+    x = 50
+    _m = 0
+    __mp = 0  # pylint: disable=unused-private-member
+
+    def __init__(self, val=99):
+        self.val = val
+        self._n = 0
+        self.__np = 0  # pylint: disable=unused-private-member
+
+    def line(self):
+        """Функция возвращающая 100"""
+        return 100
+
+    def __str__(self):
+        return "Custom_by_metaclass"
 
 
 class TestCustomClass(unittest.TestCase):
@@ -69,6 +89,67 @@ class TestCustomClass(unittest.TestCase):
         self.assertFalse(hasattr(custom_class, "line"))
         line_func = getattr(custom_class, "custom_line")
         self.assertEqual(line_func, "30")
+
+        custom_class.__test__ = 10
+        self.assertTrue(hasattr(custom_class, "__test__"))
+        self.assertFalse(hasattr(custom_class, "custom___test__"))
+        self.assertEqual(getattr(custom_class, "__test__"), 10)
+
+    def test_instance_attribute_existing_pr(self):
+        """Test for existing _protected and __private attributes"""
+        custom_class = CustomClass()
+
+        self.assertTrue(hasattr(CustomClass, "_custom_m"))
+        self.assertFalse(hasattr(CustomClass, "_m"))
+        self.assertEqual(getattr(CustomClass, "_custom_m"), 0)
+
+        self.assertTrue(hasattr(CustomClass, "_custom_CustomClass__mp"))
+        self.assertFalse(hasattr(CustomClass, "__mp"))
+        self.assertEqual(getattr(CustomClass, "_custom_CustomClass__mp"), 0)
+
+        self.assertTrue(hasattr(custom_class, "_custom_n"))
+        self.assertFalse(hasattr(custom_class, "_n"))
+        self.assertEqual(getattr(custom_class, "_custom_n"), 0)
+
+        self.assertTrue(hasattr(custom_class, "_custom_CustomClass__np"))
+        self.assertFalse(hasattr(custom_class, "__np"))
+        self.assertEqual(getattr(custom_class, "_custom_CustomClass__np"), 0)
+
+    def test_instance_attribute_add_pr(self):
+        """Test for add _protected and __private attributes"""
+        custom_class = CustomClass()
+
+        custom_class._protected = 33  # pylint: disable=W0212
+        self.assertTrue(hasattr(custom_class, "_custom_protected"))
+        self.assertFalse(hasattr(custom_class, "_protected"))
+        self.assertEqual(getattr(custom_class, "_custom_protected"), 33)
+
+        custom_class.__private = (  # pylint: disable=W0212 disable=unused-private-member
+            46
+        )
+        self.assertTrue(
+            hasattr(custom_class, "_custom_TestCustomClass__private")
+        )
+        self.assertFalse(hasattr(custom_class, "__private"))
+        self.assertEqual(
+            getattr(custom_class, "_custom_TestCustomClass__private"), 46
+        )
+
+        CustomClass.__private_class = (  # pylint: disable=W0212 disable=unused-private-member
+            -1
+        )
+        self.assertTrue(
+            hasattr(CustomClass, "_custom_TestCustomClass__private_class")
+        )
+        self.assertFalse(hasattr(CustomClass, "__private_class"))
+        self.assertEqual(
+            getattr(CustomClass, "_custom_TestCustomClass__private_class"), -1
+        )
+
+        CustomClass._protected_class = -1  # pylint: disable=W0212
+        self.assertTrue(hasattr(CustomClass, "_custom_protected_class"))
+        self.assertFalse(hasattr(CustomClass, "_protected_class"))
+        self.assertEqual(getattr(CustomClass, "_custom_protected_class"), -1)
 
     def test_attribute_error(self):
         """Test for attribute error"""
