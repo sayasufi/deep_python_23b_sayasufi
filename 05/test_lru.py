@@ -33,10 +33,10 @@ class TestLRUCache(unittest.TestCase):
             cache.set(f"k{i}", f"v{i}")
 
         self.assertEqual(cache.get("k0"), "v0")
-
+        self.assertEqual(str(cache), str({"k1": "v1", "k2": "v2", "k0": "v0"}))
         cache.set("k3", "v3")
-        self.assertEqual(str(cache), str({"k1": "v1", "k2": "v2", "k3": "v3"}))
-        self.assertIsNone(cache["k0"])
+        self.assertEqual(str(cache), str({"k2": "v2", "k0": "v0", "k3": "v3"}))
+        self.assertIsNone(cache["k1"])
         self.assertEqual(cache["k3"], "v3")
 
     def test_change_limit(self):
@@ -82,12 +82,14 @@ class TestLRUCache(unittest.TestCase):
         for i in range(2, 5):
             self.assertEqual(cache.get(f"k{i}"), f"v{i}")
 
+        self.assertEqual(str(cache), str({"k2": "v2", "k3": "v3", "k4": "v4"}))
         self.assertEqual(cache.get("k2"), "v2")
+        self.assertEqual(str(cache), str({"k3": "v3", "k4": "v4", "k2": "v2"}))
         cache.set("key", "value")
-        self.assertIsNone(cache.get("k2"))
+        self.assertIsNone(cache.get("k3"))
         self.assertEqual(cache.get("key"), "value")
         self.assertEqual(
-            str(cache), str({"k3": "v3", "k4": "v4", "key": "value"})
+            str(cache), str({"k4": "v4", "k2": "v2", "key": "value"})
         )
 
         self.assertEqual(cache.size, 3)
