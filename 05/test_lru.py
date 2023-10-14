@@ -137,3 +137,5 @@ class TestLRUCache(unittest.TestCase):
             LRUCache(0)
         with self.assertRaises(ValueError):
             LRUCache(-1)
+        with self.assertRaises(TypeError):
+            LRUCache('fdg')

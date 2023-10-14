@@ -8,6 +8,8 @@ class LRUCache:
     """Класс LRUCache"""
 
     def __init__(self, limit=10):
+        if not isinstance(limit, int):
+            raise TypeError
         if limit <= 0:
             raise ValueError
         self._value_storage = {}
