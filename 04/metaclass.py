@@ -20,12 +20,6 @@ class CustomMeta(type):
         else:
             object.__setattr__(cls_obj, key, value)
 
-    def __init__(cls, name, bases, classdict):
-        super().__init__(name, bases, classdict)
-
-    def __call__(cls, *args, **kwargs):
-        return super().__call__(*args, **kwargs)
-
     def __new__(mcs, name, bases, class_dict, **kwargs):
         class_dict_clone = copy.deepcopy(class_dict)
         for attr_name, attr_value in class_dict.items():

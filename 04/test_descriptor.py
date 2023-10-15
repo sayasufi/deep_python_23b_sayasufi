@@ -28,6 +28,32 @@ class TestData(unittest.TestCase):
         self.assertEqual(data.name, "")
         self.assertEqual(data.price, 1)
 
+    def test_changing_values_to_valid_invalid(self):
+        """Тест валидных значений"""
+        data = Data(1, "test", 100)
+        self.assertEqual(data.num, 1)
+        self.assertEqual(data.name, "test")
+        self.assertEqual(data.price, 100)
+
+        with self.assertRaises(TypeError):
+            data.num = []
+        self.assertEqual(data.num, 1)
+
+        with self.assertRaises(TypeError):
+            data.name = 5
+        self.assertEqual(data.name, "test")
+
+        with self.assertRaises(ValueError):
+            data.price = -10
+        self.assertEqual(data.price, 100)
+
+        data.num = 8
+        data.name = "example"
+        data.price = 50
+        self.assertEqual(data.num, 8)
+        self.assertEqual(data.name, "example")
+        self.assertEqual(data.price, 50)
+
     def test_num_invalid(self):
         """Тест неверного num"""
         with self.assertRaises(TypeError):
