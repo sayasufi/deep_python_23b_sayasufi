@@ -14,21 +14,20 @@ class LRUCache:
             raise ValueError
         self._value_storage = {}
         self._limit = limit
-        self.size = 0
 
     def get(self, key):
         """Функция для получения значений"""
-        value = self._value_storage.get(key)
-        if value:
+        if key in self._value_storage:
+            value = self._value_storage.get(key)
             del self._value_storage[key]
             self._value_storage[key] = value
-        return value
+            return value
+        return None
 
     def set(self, key, value):
         """Функция для установки значения"""
         if key in self._value_storage:
             del self._value_storage[key]
-            self.size -= 1
 
         self._insert_item(key, value)
         self._pop_items()
@@ -40,15 +39,13 @@ class LRUCache:
 
     def _pop_items(self):
         """Функция для удаления элементов"""
-        while self.size > self._limit:
+        while len(self._value_storage) > self._limit:
             key = next(iter(self._value_storage))
             del self._value_storage[key]
-            self.size -= 1
 
     def _insert_item(self, key, value):
         """Функция для установки значений в словарь"""
         self._value_storage[key] = value
-        self.size += 1
 
     def __getitem__(self, key):
         return self.get(key)
@@ -58,3 +55,6 @@ class LRUCache:
 
     def __str__(self):
         return str(self._value_storage)
+
+    def __len__(self):
+        return len(self._value_storage)
