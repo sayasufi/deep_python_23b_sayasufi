@@ -29,6 +29,8 @@ def parse_url(url, words_count):
 
 
 class NetProtocol:
+    """Класс NetProtocol"""
+
     def __init__(self):
         self.buffer = ""
 
@@ -58,6 +60,8 @@ class NetProtocol:
 
 
 class Server:
+    """Класс сервера"""
+
     def __init__(self, address="localhost", port=8080, queue_size=10):
         self.address = address
         self.port = port
@@ -144,7 +148,7 @@ class Server:
                 break
             # Получение данных из задачи
             keep_alive, data, conn = task
-            resp = ''
+            resp = ""
             try:
                 resp = func(data, *args)
                 # Преобразование результата в JSON-строку

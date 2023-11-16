@@ -1,3 +1,4 @@
+"""Тесты"""
 # pylint: disable=protected-access
 
 from dataclasses import dataclass
@@ -13,7 +14,10 @@ from client import Client
 
 
 class TestNetwork(unittest.TestCase):
+    """Тесты для класса NetProtocol"""
+
     def test_make_msg(self):
+        """Тесты для формирования сообщений"""
         net = NetProtocol()
         data = "https://ru.wikipedia.org/wiki/Python"
 
@@ -34,6 +38,7 @@ class TestNetwork(unittest.TestCase):
         self.assertEqual(msg, "0\n".encode())
 
     def test_read_msg(self):
+        """Тесты для чтения сообщений"""
         net = NetProtocol()
 
         msg = "0https://ru.wikipedia.org/wiki/Python\n".encode()
@@ -67,8 +72,12 @@ class TestNetwork(unittest.TestCase):
 
 
 class TestClinet(unittest.TestCase):
+    """Тесты для клиента"""
+
     @unittest.mock.patch("socket.socket")
     def test_parse_file(self, _):
+        """Тест для парсинга файла"""
+        # Создание объекта класса Client с размером очереди 3
         client = Client(queue_size=3)
         with open("tests_data/case1.txt", "r", encoding="utf-8") as urls:
             client._parse_file(urls)
@@ -77,11 +86,13 @@ class TestClinet(unittest.TestCase):
         while not client._urls_pool.empty():
             urls_list.append(client._urls_pool.get(timeout=1))
         self.assertListEqual(
-            urls_list, [("address1", True), ("address2", True), ("address3", False)]
+            urls_list,
+            [("address1", True), ("address2", True), ("address3", False)],
         )
 
     @unittest.mock.patch("socket.socket")
     def test_parse_empty_file(self, _):
+        """Тест для пустого файла с urls"""
         client = Client()
         with open("tests_data/empty_file.txt", "r", encoding="utf-8") as urls:
             client._parse_file(urls)
@@ -90,6 +101,8 @@ class TestClinet(unittest.TestCase):
 
     @unittest.mock.patch("socket.socket")
     def test_make_request(self, socket_mock):
+        """Тест для созадния запроса"""
+        # Создание объекта класса Client с размером очереди 4
         client = Client(queue_size=4)
         with open("tests_data/case1.txt", "r", encoding="utf-8") as urls:
             client._parse_file(urls)
@@ -100,11 +113,14 @@ class TestClinet(unittest.TestCase):
         socket_inst = socket_mock.return_value
         socket_inst.sendall.return_value = None
         socket_inst.recv.return_value = net.make_msg("response")
-
+        # Использование контекстного менеджера для замены print на print_mock
         with unittest.mock.patch("builtins.print") as print_mock:
             client._make_request()
-
+            # Проверка равенства количества вызовов
+            # метода sendall объекта socket_inst и 3
             self.assertEqual(socket_inst.sendall.call_count, 3)
+            # Проверка равенства количества вызовов
+            # метода recv объекта socket_inst и 3
             self.assertEqual(socket_inst.recv.call_count, 3)
             self.assertEqual(
                 [unittest.mock.call("response")] * 3, print_mock.mock_calls
@@ -112,8 +128,11 @@ class TestClinet(unittest.TestCase):
 
 
 class TestServer(unittest.TestCase):
+    """Тесты для сервера"""
+
     @unittest.mock.patch("server.BeautifulSoup")
     def test_parse_url(self, bs_mock):
+        """Тестирование функции parse_url"""
         test_cases = [
             {
                 "text": "word, ..'word'', qwerty %(QWERTY something!@ +)WORD&(@%",  # noqa
@@ -125,11 +144,12 @@ class TestServer(unittest.TestCase):
                 "expected_result": {"word": 1, "qwerty": 1, "something": 1},
             },
         ]
-
+        # Создание экземпляра объекта BeautifulSoup
         bs_instance = bs_mock.return_value
         for case in test_cases:
             bs_instance.get_text.return_value = case["text"]
 
+            # Использование контекстного менеджера для замены urlopen
             with unittest.mock.patch("server.urlopen"):
                 result = parse_url("", 4)
 
@@ -137,6 +157,7 @@ class TestServer(unittest.TestCase):
 
     @unittest.mock.patch("socket.socket")
     def test_worker_routine(self, socket_mock):
+        """Тестирование функции _worker_routine"""
         server = Server()
         net = NetProtocol()
 
@@ -147,7 +168,9 @@ class TestServer(unittest.TestCase):
             None,
         ]
         for task in test_tasks:
+            # Добавление задачи в очередь _task_queue объекта server
             server._task_queue.put(task)
+        # Уведомление о завершении задачи
         server._task_queue.task_done()
 
         socket_inst = socket_mock.return_value
@@ -155,19 +178,26 @@ class TestServer(unittest.TestCase):
         socket_inst.close.return_value = None
 
         response = {"response": "something"}
+        # Создание мок-функции test_func с возвращаемым значением response
         test_func = unittest.mock.Mock(return_value=response)
         expected_result = str(response).replace("'", '"')
         expected_result = f"data: {expected_result}"
         expected_result = net.make_msg(expected_result)
 
+        # Использование контекстного менеджера для замены print на mock-функцию
         with unittest.mock.patch("builtins.print"):
             server._worker_routine(test_func)
 
+        # Проверка равенства количества вызовов test_func и 3
         self.assertEqual(test_func.call_count, 3)
+        # Проверка равенства количества вызовов sendall объекта socket_mock и 3
         self.assertEqual(socket_mock.sendall.call_count, 3)
+        # Проверка равенства количества вызовов close объекта socket_mock и 1
         self.assertEqual(socket_mock.close.call_count, 1)
+        # Проверка равенства значения _tasks_processed объекта server и 3
         self.assertEqual(3, next(server._tasks_processed))
 
+        # Проверка равенства списков
         self.assertEqual(
             [unittest.mock.call(expected_result)] * 3,
             socket_mock.sendall.mock_calls,
@@ -175,6 +205,7 @@ class TestServer(unittest.TestCase):
 
     @unittest.mock.patch("socket.socket")
     def test_worker_routine_with_exceptions(self, socket_mock):
+        """Тестирование функции worker_routine с исключениями"""
         server = Server()
         net = NetProtocol()
 
@@ -184,23 +215,29 @@ class TestServer(unittest.TestCase):
             (False, "url", socket_mock),
             None,
         ]
+        # Добавление задачи в очередь _task_queue объекта server
         for task in test_tasks:
             server._task_queue.put(task)
+        # Уведомление о завершении задачи
         server._task_queue.task_done()
 
         socket_inst = socket_mock.return_value
         socket_inst.sendall.return_value = None
         socket_inst.close.return_value = None
 
+        # Создание объекта StringIO
         fake_fd = StringIO()
 
         def raise_exception(exception):
+            # Вызов исключения ValueError
             if exception == "value":
                 raise ValueError("error")
+            # Вызов исключения HTTPError
             if exception == "http":
                 raise HTTPError(
                     "error", 400, HTTPMessage(""), HTTPMessage(""), fake_fd
                 )
+            # Вызов исключения URLError
             if exception == "url":
                 raise URLError("error")
 
@@ -210,20 +247,27 @@ class TestServer(unittest.TestCase):
             net.make_msg("url: network error"),
         ]
 
+        # Использование контекстного менеджера для замены print на mock-функцию
         with unittest.mock.patch("builtins.print"):
             server._worker_routine(raise_exception)
 
+        # Проверка равенства количества вызовов sendall объекта socket_mock и 3
         self.assertEqual(socket_mock.sendall.call_count, 3)
+        # Проверка равенства значения _tasks_processed объекта server и 3
         self.assertEqual(3, next(server._tasks_processed))
+        # Проверка равенства списков
         self.assertEqual(
             [unittest.mock.call(res) for res in expected_result],
             socket_mock.sendall.mock_calls,
         )
 
+        # Проверка равенства количества вызовов close объекта socket_mock и 1
         self.assertEqual(socket_mock.close.call_count, 1)
 
     @unittest.mock.patch("socket.socket")
     def test_start(self, socket_mock):
+        """Тестирование функции start"""
+        # Создание объекта класса Server с размером очереди
         server = Server(queue_size=3)
         net = NetProtocol()
 
@@ -236,11 +280,17 @@ class TestServer(unittest.TestCase):
 
         @dataclass
         class FakeConnection:
+            """Создается класс FakeConnection"""
+
             def __init__(self, requests):
                 self.requests = requests
                 self.counter = count()
 
             def recv(self, _):
+                """метод recv, который возвращает элементы из списка
+                requests по порядку или вызывает исключение KeyboardInterrupt,
+                если достигнут конец списка.
+                """
                 i = next(self.counter)
                 if i < len(self.requests):
                     return self.requests[i]
@@ -249,6 +299,8 @@ class TestServer(unittest.TestCase):
         socket_inst = socket_mock.return_value
         socket_inst.accept.return_value = FakeConnection(test_req), None
 
+        # С помощью контекстного менеджера заменяется
+        # функция print на print_mock.
         with unittest.mock.patch("builtins.print"):
             server.start(None, workers_count=0)
 
