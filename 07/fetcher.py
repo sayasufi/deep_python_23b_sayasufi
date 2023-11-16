@@ -1,10 +1,10 @@
 """
 Скрипт для асинхронной обкачки урлов
 """
-
+import asyncio
 import re
 from argparse import ArgumentParser
-from asyncio import Queue, create_task, run
+from asyncio import Queue, create_task
 from collections import Counter
 
 from aiohttp import ClientSession
@@ -110,10 +110,18 @@ async def main():
     парсинга страниц. URL-адреса читаются из файла urls.txt.
     """
     parser = ArgumentParser()
-    parser.add_argument("-c", default=10, help="Workers count", type=int)
-    parser.add_argument("-f", default="urls.txt", help="File path")
-    parser.add_argument("-m", default=10, help="Max queue size", type=int)
-    parser.add_argument("-w", default=3, help="Words count", type=int)
+    parser.add_argument(
+        "c", default=10, help="Workers count", type=int, nargs="?", const=10
+    )
+    parser.add_argument(
+        "f", default="urls.txt", help="File path", nargs="?", const="urls.txt"
+    )
+    parser.add_argument(
+        "-m", default=10, help="Max queue size", type=int, required=False
+    )
+    parser.add_argument(
+        "-w", default=3, help="Words count", type=int, required=False
+    )
 
     fetcher_args = parser.parse_args()
     fetcher = Fetcher(fetcher_args.c, fetcher_args.w, fetcher_args.m)
@@ -127,4 +135,4 @@ async def main():
 
 
 if __name__ == "__main__":
-    run(main())
+    asyncio.run(main())

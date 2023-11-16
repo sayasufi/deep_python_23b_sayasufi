@@ -112,8 +112,17 @@ class Client:
 
 if __name__ == "__main__":
     parser = ArgumentParser()
-    parser.add_argument("-f", default="urls.txt", help="File with urls")
-    parser.add_argument("-t", default=1, help="Therads count")
+    parser.add_argument(
+        "t", default=1, help="Therads count", type=int, nargs="?", const=1
+    )
+    parser.add_argument(
+        "f",
+        default="urls.txt",
+        help="File with urls",
+        type=str,
+        nargs="?",
+        const="urls.txt",
+    )
 
     args = parser.parse_args()
 

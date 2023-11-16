@@ -6,7 +6,7 @@ from unittest.mock import AsyncMock, Mock, call, patch
 from unittest.async_case import IsolatedAsyncioTestCase
 
 from faker import Faker
-from fetcher import Fetcher, print_response
+from fetcher import Fetcher
 
 
 class TestFetcher(IsolatedAsyncioTestCase):
