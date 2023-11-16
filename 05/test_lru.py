@@ -38,6 +38,8 @@ class TestLRUCache(unittest.TestCase):
         self.assertEqual(str(cache), str({"k2": "v2", "k0": "v0", "k3": "v3"}))
         self.assertIsNone(cache["k1"])
         self.assertEqual(cache["k3"], "v3")
+        self.assertEqual(cache.get("k2"), 'v2')
+        self.assertEqual(cache.get("k0"), 'v0')
 
     def test_change_limit(self):
         """Тест для изменения размера кэша"""
@@ -50,11 +52,15 @@ class TestLRUCache(unittest.TestCase):
         self.assertEqual(str(cache), str({"k7": "v7", "k8": "v8", "k9": "v9"}))
 
         cache.change_limit(4)
-        cache["k0"] = "v0"
+        cache.set('k0', 'v0')
         self.assertEqual(
             str(cache),
             str({"k7": "v7", "k8": "v8", "k9": "v9", "k0": "v0"}),
         )
+        self.assertEqual(cache.get("k7"), 'v7')
+        self.assertEqual(cache.get("k8"), 'v8')
+        self.assertEqual(cache['k9'], 'v9')
+        self.assertEqual(cache.get("k0"), 'v0')
 
     def test_simple(self):
         """Тест для проверки значений и размера"""
@@ -65,7 +71,7 @@ class TestLRUCache(unittest.TestCase):
         for i in range(3):
             self.assertEqual(cache.get(f"k{i}"), f"v{i}")
 
-        self.assertEqual(cache.size, 3)
+        self.assertEqual(len(cache), 3)
 
     def test_get_not_exist_key(self):
         """Тест для несуществующего значения"""
@@ -92,7 +98,10 @@ class TestLRUCache(unittest.TestCase):
             str(cache), str({"k4": "v4", "k2": "v2", "key": "value"})
         )
 
-        self.assertEqual(cache.size, 3)
+        self.assertEqual(len(cache), 3)
+        self.assertEqual(cache.get("k4"), "v4")
+        self.assertEqual(cache.get("k2"), "v2")
+        self.assertEqual(cache.get("key"), "value")
 
     def test_set_exist_key(self):
         """Тест для переопределения значения"""
@@ -107,17 +116,21 @@ class TestLRUCache(unittest.TestCase):
 
         self.assertEqual(str(cache), str({"k0": "val", "k2": "v2"}))
         self.assertIsNone(cache.get("k1"))
+        self.assertEqual(cache.get("k0"), 'val')
+        self.assertEqual(cache.get("k2"), 'v2')
 
         for _ in range(3):
             cache.set("k0", "v0")
 
         self.assertEqual(str(cache), str({"k2": "v2", "k0": "v0"}))
 
-        self.assertEqual(cache.size, 2)
+        self.assertEqual(len(cache), 2)
         self.assertEqual(cache.get("k0"), "v0")
         self.assertEqual(str(cache), str({"k2": "v2", "k0": "v0"}))
         self.assertEqual(cache.get("k2"), "v2")
         self.assertEqual(str(cache), str({"k0": "v0", "k2": "v2"}))
+        self.assertEqual(cache.get("k0"), "v0")
+        self.assertEqual(cache.get("k2"), "v2")
 
     def test_small_size(self):
         """Тест для кэша единичного размера"""
@@ -139,3 +152,20 @@ class TestLRUCache(unittest.TestCase):
             LRUCache(-1)
         with self.assertRaises(TypeError):
             LRUCache('fdg')
+
+    def test_as_in_the_task(self):
+        """Тест как в задании"""
+        cache = LRUCache(2)
+
+        cache.set("k1", "val1")
+        cache.set("k2", "val2")
+
+        assert cache.get("k3") is None
+        assert cache.get("k2") == "val2"
+        assert cache.get("k1") == "val1"
+
+        cache.set("k3", "val3")
+
+        assert cache.get("k3") == "val3"
+        assert cache.get("k2") is None
+        assert cache.get("k1") == "val1"
