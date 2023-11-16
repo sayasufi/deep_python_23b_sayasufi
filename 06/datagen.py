@@ -1,17 +1,20 @@
+"""Генерация файла с заданным кол-вом url"""
+
 from argparse import ArgumentParser
 from urllib.request import urlopen
 from concurrent.futures import ThreadPoolExecutor
 
 
-def generate_url(url):
+def generate_url():
+    """Функция, которая открывает случайную страницу Википедии и возвращает ее URL"""
     page = urlopen("https://en.wikipedia.org/wiki/Special:Random")
     return page.url
 
 
 if __name__ == "__main__":
     parser = ArgumentParser()
-    parser.add_argument("-f", help="Filename")
-    parser.add_argument("-k", default=1, help="URLs count")
+    parser.add_argument("-f", default='urls.txt', help="Filename")
+    parser.add_argument("-k", default=100, help="URLs count")
 
     args = parser.parse_args()
 
