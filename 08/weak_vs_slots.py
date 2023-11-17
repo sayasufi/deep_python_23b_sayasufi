@@ -35,7 +35,11 @@ def profile_deco(func):
         # print(memory_usage((func, args, kwargs)))
         stream = io.StringIO()
         sortby = "cumulative"
-        stats = pstats.Stats(profiler, stream=stream).strip_dirs().sort_stats(sortby)
+        stats = (
+            pstats.Stats(profiler, stream=stream)
+            .strip_dirs()
+            .sort_stats(sortby)
+        )
         stats.print_stats("weak_vs_slots.py")
         print(stream.getvalue())
 
@@ -75,8 +79,8 @@ def run_measure_weak(n):
     _ = [delattr(cls, "x") for cls in class_list]
 
 
-if __name__ == '__main__':
-    N = 10 ** 5
+if __name__ == "__main__":
+    N = 10**5
     run_measure_default(N)
     run_measure_slots(N)
     run_measure_weak(N)

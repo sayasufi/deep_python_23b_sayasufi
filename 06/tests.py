@@ -71,7 +71,7 @@ class TestNetwork(unittest.TestCase):
         self.assertEqual(data, [(False, "inbuffabc")])
 
 
-class TestClinet(unittest.TestCase):
+class TestClient(unittest.TestCase):
     """Тесты для клиента"""
 
     @unittest.mock.patch("socket.socket")
@@ -287,7 +287,7 @@ class TestServer(unittest.TestCase):
                 self.counter = count()
 
             def recv(self, _):
-                """метод recv, который возвращает элементы из списка
+                """Метод recv, который возвращает элементы из списка
                 requests по порядку или вызывает исключение KeyboardInterrupt,
                 если достигнут конец списка.
                 """
