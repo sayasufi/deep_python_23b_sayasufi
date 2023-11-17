@@ -1,14 +1,13 @@
 """"
 Тесты для скрипта асинхронной обкачки урлов
 """
-import time
 
 # pylint: disable=protected-access
 # pylint: disable=E0401
 
 from asyncio import create_task
 
-from unittest.mock import AsyncMock, Mock, call, patch
+from unittest.mock import AsyncMock, Mock, call, patch, MagicMock
 from asynctest import IsolatedAsyncioTestCase
 
 from faker import Faker
@@ -101,12 +100,44 @@ class TestFetcher(IsolatedAsyncioTestCase):
         """
         # Создается экземпляр Fetcher с количеством рабочих потоков 5 и
         # вызывается метод start с мок-объектом в качестве аргумента
-        fetcher = Fetcher(workers_count=5)
-
+        fetcher = Fetcher(workers_count=5, urls_vn=[""])
+        await fetcher.start(Mock())
         # Проверяется, что для каждого рабочего потока не
         # вызывался метод done, то есть они все еще выполняются.
         for worker in fetcher._workers:
             self.assertFalse(worker.done())
+
+        await fetcher.stop()
+
+    @patch("builtins.open")
+    async def test_start_without_urls_vn(self, mock_open):
+        """Тест для start с файлом"""
+        urls_file = MagicMock()
+        urls_file.__enter__.return_value = urls_file
+        urls_file.__iter__.return_value = ["url1"]
+        mock_open.return_value = urls_file
+
+        obj = Fetcher()
+        obj._path = "urls.txt"
+
+        await obj.start(Mock())
+
+        mock_open.assert_called_once_with("urls.txt", "r", encoding="utf-8")
+
+    @patch("builtins.open")
+    async def test_start_empty_urls_vn(self, mock_open):
+        """Тест для start с пустым файлом"""
+        urls_file = MagicMock()
+        urls_file.__enter__.return_value = urls_file
+        urls_file.__iter__.return_value = ["url1"]
+        mock_open.return_value = urls_file
+
+        obj = Fetcher()
+        obj.urls_vn = []
+
+        await obj.start(Mock())
+
+        mock_open.assert_called_once_with(obj._path, "r", encoding="utf-8")
 
     async def test_fetch(self):
         """
