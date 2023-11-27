@@ -27,12 +27,15 @@ class WeakAttr:
 
 
 def profile_deco(func):
+    profiler = cProfile.Profile()
+
     def _wrapper(*args, **kwargs):
-        profiler = cProfile.Profile()
         profiler.enable()
-        func(*args, **kwargs)
+        result = func(*args, **kwargs)
         profiler.disable()
-        # print(memory_usage((func, args, kwargs)))
+        return result
+
+    def print_stat():
         stream = io.StringIO()
         sortby = "cumulative"
         stats = (
@@ -42,6 +45,8 @@ def profile_deco(func):
         )
         stats.print_stats("weak_vs_slots.py")
         print(stream.getvalue())
+
+    _wrapper.print_stat = print_stat
 
     return _wrapper
 
@@ -82,5 +87,8 @@ def run_measure_weak(n):
 if __name__ == "__main__":
     N = 10**5
     run_measure_default(N)
+    run_measure_default.print_stat()
     run_measure_slots(N)
+    run_measure_slots.print_stat()
     run_measure_weak(N)
+    run_measure_weak.print_stat()
