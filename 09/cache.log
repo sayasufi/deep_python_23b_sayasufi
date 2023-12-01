@@ -9,3 +9,25 @@ WARNING	2023-11-21 12:41:10,550	Delete item by key='k2' from cache, because the 
 INFO	2023-11-21 12:41:10,550	Get item by key='k3', value='val3'
 WARNING	2023-11-21 12:41:10,550	Get item by key='k2', key is missing
 INFO	2023-11-21 12:41:10,550	Get item by key='k1', value='val1'
+INFO	2023-12-01 15:51:09,359	Init lru_cache with limit=2
+INFO	2023-12-01 15:51:09,360	Set key='k1', value='val1' in cache
+INFO	2023-12-01 15:51:09,360	Set key='k2', value='val2' in cache
+WARNING	2023-12-01 15:51:09,360	Get item by key='k3', key is missing
+INFO	2023-12-01 15:51:09,360	Get item by key='k2', value='val2'
+INFO	2023-12-01 15:51:09,360	Get item by key='k1', value='val1'
+INFO	2023-12-01 15:51:09,360	Set key='k3', value='val3' in cache
+WARNING	2023-12-01 15:51:09,360	Delete item by key='k2' from cache, because the container is full
+INFO	2023-12-01 15:51:09,360	Get item by key='k3', value='val3'
+WARNING	2023-12-01 15:51:09,360	Get item by key='k2', key is missing
+INFO	2023-12-01 15:51:09,360	Get item by key='k1', value='val1'
+INFO	2023-12-01 15:51:23,513	Init lru_cache with limit=2
+INFO	2023-12-01 15:51:23,513	Set key='k1', value='val1' in cache
+INFO	2023-12-01 15:51:23,513	Set key='k2', value='val2' in cache
+WARNING	2023-12-01 15:51:23,513	Get item by key='k3', key is missing
+INFO	2023-12-01 15:51:23,513	Get item by key='k2', value='val2'
+INFO	2023-12-01 15:51:23,514	Get item by key='k1', value='val1'
+INFO	2023-12-01 15:51:23,514	Set key='k3', value='val3' in cache
+WARNING	2023-12-01 15:51:23,514	Delete item by key='k2' from cache, because the container is full
+INFO	2023-12-01 15:51:23,514	Get item by key='k3', value='val3'
+WARNING	2023-12-01 15:51:23,514	Get item by key='k2', key is missing
+INFO	2023-12-01 15:51:23,514	Get item by key='k1', value='val1'
