@@ -5,6 +5,7 @@
 import os
 import unittest
 from unittest.mock import mock_open, patch
+
 from generator_for_file import gen_search_words
 
 

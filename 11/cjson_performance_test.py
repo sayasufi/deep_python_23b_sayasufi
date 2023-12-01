@@ -1,16 +1,14 @@
-import time
 import json
-
-import ujson
+import time
 
 import cjson
-
+import ujson
 
 load_c, load_u, load_j = [], [], []
 dump_c, dump_u, dump_j = [], [], []
 
 for digit in range(1, 6):
-    with open(f'./test{digit}.json', 'r', encoding='UTF-8') as f:
+    with open(f"./test{digit}.json", "r", encoding="UTF-8") as f:
         big_json_str = json.dumps(json.load(f))
 
         start = time.time()
@@ -28,7 +26,6 @@ for digit in range(1, 6):
         end = time.time()
         load_j.append(round(end - start, 10))
 
-
         start = time.time()
         cjson.dumps(big_dict)
         end = time.time()
@@ -44,7 +41,7 @@ for digit in range(1, 6):
         end = time.time()
         dump_j.append(round(end - start, 10))
 
-        print(f'{digit} file complete')
+        print(f"{digit} file complete")
 
 
 print("=================================LOADS============================")

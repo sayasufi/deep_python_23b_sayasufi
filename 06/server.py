@@ -1,10 +1,9 @@
 """Сервер"""
 
-import re
 import json
+import re
 import socket
 import urllib.error
-
 from argparse import ArgumentParser
 from collections import Counter
 from itertools import count
@@ -12,6 +11,7 @@ from queue import Queue
 from threading import Thread, current_thread
 from time import sleep
 from urllib.request import urlopen
+
 from bs4 import BeautifulSoup
 
 

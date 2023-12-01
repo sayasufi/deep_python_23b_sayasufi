@@ -6,9 +6,10 @@
 import asyncio
 import os
 import re
+from argparse import ArgumentParser
 from asyncio import Queue, create_task
 from collections import Counter
-from argparse import ArgumentParser
+
 from aiohttp import ClientSession
 from aiohttp.web import HTTPException
 from bs4 import BeautifulSoup

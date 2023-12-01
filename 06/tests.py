@@ -1,16 +1,16 @@
 """Тесты"""
 # pylint: disable=protected-access
 
-from dataclasses import dataclass
 import unittest
 import unittest.mock
-
-from itertools import count
-from urllib.error import HTTPError, URLError
+from dataclasses import dataclass
 from http.client import HTTPMessage
 from io import StringIO
-from server import NetProtocol, Server, parse_url
+from itertools import count
+from urllib.error import HTTPError, URLError
+
 from client import Client
+from server import NetProtocol, Server, parse_url
 
 
 class TestNetwork(unittest.TestCase):

@@ -4,6 +4,7 @@
 """
 
 import unittest
+
 from lru_cache import LRUCache
 
 
@@ -38,8 +39,8 @@ class TestLRUCache(unittest.TestCase):
         self.assertEqual(str(cache), str({"k2": "v2", "k0": "v0", "k3": "v3"}))
         self.assertIsNone(cache["k1"])
         self.assertEqual(cache["k3"], "v3")
-        self.assertEqual(cache.get("k2"), 'v2')
-        self.assertEqual(cache.get("k0"), 'v0')
+        self.assertEqual(cache.get("k2"), "v2")
+        self.assertEqual(cache.get("k0"), "v0")
 
     def test_change_limit(self):
         """Тест для изменения размера кэша"""
@@ -52,15 +53,15 @@ class TestLRUCache(unittest.TestCase):
         self.assertEqual(str(cache), str({"k7": "v7", "k8": "v8", "k9": "v9"}))
 
         cache.change_limit(4)
-        cache.set('k0', 'v0')
+        cache.set("k0", "v0")
         self.assertEqual(
             str(cache),
             str({"k7": "v7", "k8": "v8", "k9": "v9", "k0": "v0"}),
         )
-        self.assertEqual(cache.get("k7"), 'v7')
-        self.assertEqual(cache.get("k8"), 'v8')
-        self.assertEqual(cache['k9'], 'v9')
-        self.assertEqual(cache.get("k0"), 'v0')
+        self.assertEqual(cache.get("k7"), "v7")
+        self.assertEqual(cache.get("k8"), "v8")
+        self.assertEqual(cache["k9"], "v9")
+        self.assertEqual(cache.get("k0"), "v0")
 
     def test_simple(self):
         """Тест для проверки значений и размера"""
@@ -116,8 +117,8 @@ class TestLRUCache(unittest.TestCase):
 
         self.assertEqual(str(cache), str({"k0": "val", "k2": "v2"}))
         self.assertIsNone(cache.get("k1"))
-        self.assertEqual(cache.get("k0"), 'val')
-        self.assertEqual(cache.get("k2"), 'v2')
+        self.assertEqual(cache.get("k0"), "val")
+        self.assertEqual(cache.get("k2"), "v2")
 
         for _ in range(3):
             cache.set("k0", "v0")
@@ -151,7 +152,7 @@ class TestLRUCache(unittest.TestCase):
         with self.assertRaises(ValueError):
             LRUCache(-1)
         with self.assertRaises(TypeError):
-            LRUCache('fdg')
+            LRUCache("fdg")
 
     def test_as_in_the_task(self):
         """Тест как в задании"""

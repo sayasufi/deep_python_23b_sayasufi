@@ -1,8 +1,8 @@
 """Генерация файла с заданным кол-вом url"""
 
+import concurrent.futures
 from argparse import ArgumentParser
 from urllib.request import urlopen
-import concurrent.futures
 
 
 def generate_url(url_scope):

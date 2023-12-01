@@ -6,11 +6,11 @@
 # pylint: disable=E0401
 
 from asyncio import create_task
-
 from unittest.mock import AsyncMock, Mock, call, patch, MagicMock
-from asynctest import IsolatedAsyncioTestCase
 
+from asynctest import IsolatedAsyncioTestCase
 from faker import Faker
+
 from fetcher import Fetcher, print_response, HTTPException, arg_parser
 
 

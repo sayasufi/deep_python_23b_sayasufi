@@ -5,6 +5,7 @@
 
 import unittest
 from unittest.mock import MagicMock
+
 from message_rating_function import SomeModel, predict_message_mood
 
 

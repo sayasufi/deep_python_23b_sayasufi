@@ -1,10 +1,10 @@
 """Клиент"""
 
 import socket
-
-from queue import Queue
 from argparse import ArgumentParser
+from queue import Queue
 from threading import Thread
+
 from server import NetProtocol
 
 

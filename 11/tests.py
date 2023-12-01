@@ -1,25 +1,25 @@
 import json
 import unittest
 
-import ujson
-
 import cjson
+import ujson
 
 
 class TestCJSON(unittest.TestCase):
-
     def test_loads(self):
         json_strs = (
             '{"":""}',
             '{"": ""}',
             '{"" : ""}',
             '{"hello": 10, "world": "value"}',
-            '{"board": 123444, "width": 120}'
+            '{"board": 123444, "width": 120}',
         )
         for json_str in json_strs:
-            self.assertEqual(cjson.loads(json_str),
-                             ujson.loads(json_str),
-                             json.loads(json_str))
+            self.assertEqual(
+                cjson.loads(json_str),
+                ujson.loads(json_str),
+                json.loads(json_str),
+            )
 
     def test_error_loads(self):
         bad_json_strs = (
@@ -45,12 +45,11 @@ class TestCJSON(unittest.TestCase):
             {"hello": 10, "world": "value"},
             {"hello": "10", "world": "value"},
             {"board": 123444, "width": 120},
-            {"board": 123444, "width": "120"}
+            {"board": 123444, "width": "120"},
         )
 
         for d in dicts:
-            self.assertEqual(ujson.dumps(d),
-                             cjson.dumps(d))
+            self.assertEqual(ujson.dumps(d), cjson.dumps(d))
 
     def test_bad_dicts(self):
         bad_dicts = (
@@ -69,7 +68,7 @@ class TestCJSON(unittest.TestCase):
             {"hello": 10, "world": "value"},
             {"hello": "10", "world": "value"},
             {"board": 123444, "width": 120},
-            {"board": 123444, "width": "120"}
+            {"board": 123444, "width": "120"},
         )
 
         for d in dicts:
@@ -79,12 +78,11 @@ class TestCJSON(unittest.TestCase):
         json_strs = (
             '{"":""}',
             '{"hello":10,"world":"value"}',
-            '{"board":123444,"width":120}'
+            '{"board":123444,"width":120}',
         )
         for json_str in json_strs:
-            self.assertEqual(cjson.dumps(cjson.loads(json_str)),
-                             json_str)
+            self.assertEqual(cjson.dumps(cjson.loads(json_str)), json_str)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

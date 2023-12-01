@@ -3,8 +3,8 @@
 Функция генератора для чтения и фильтрации файла
 """
 
-import os
 import io
+import os
 
 
 def gen_search_words(file_object, search_words):
